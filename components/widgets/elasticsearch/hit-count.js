@@ -1,3 +1,4 @@
+
 import { Component } from 'react'
 import fetch from 'isomorphic-unfetch'
 import { object, string, number } from 'yup'
@@ -13,7 +14,22 @@ const schema = object().shape({
   title: string()
 })
 
-export default class ElasticsearchHitCount extends Component {
+interface Props {
+  url: string;
+  index: string;
+  query: string;
+  interval?: number;
+  title?: string;
+  authKey?: string;
+}
+
+interface State {
+  count: number;
+  error: boolean;
+  loading: boolean;
+}
+
+export default class ElasticsearchHitCount extends Component<Props, State> {
   static defaultProps = {
     interval: 1000 * 60 * 5,
     title: 'Elasticsearch Hit Count'
