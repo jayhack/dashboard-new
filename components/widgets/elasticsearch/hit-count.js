@@ -1,4 +1,5 @@
-import { Component } from 'react'
+
+import { Component, FC } from 'react'
 import fetch from 'isomorphic-unfetch'
 import { object, string, number } from 'yup'
 import Widget from '../../widget'
@@ -13,13 +14,28 @@ const schema = object().shape({
   title: string()
 })
 
-export default class ElasticsearchHitCount extends Component {
-  static defaultProps = {
+interface Props {
+  url: string;
+  index: string;
+  query: string;
+  interval?: number;
+  title?: string;
+  authKey?: string;
+}
+
+interface State {
+  count: number;
+  error: boolean;
+  loading: boolean;
+}
+
+export default class ElasticsearchHitCount extends Component<Props, State> {
+  static defaultProps: Props = {
     interval: 1000 * 60 * 5,
     title: 'Elasticsearch Hit Count'
   }
 
-  state = {
+  state: State = {
     count: 0,
     error: false,
     loading: true
@@ -28,7 +44,7 @@ export default class ElasticsearchHitCount extends Component {
   componentDidMount () {
     schema.validate(this.props)
       .then(() => this.fetchInformation())
-      .catch((err) => {
+      .catch((err: any) => {
         console.error(`${err.name} @ ${this.constructor.name}`, err.errors)
         this.setState({ error: true, loading: false })
       })
@@ -47,7 +63,7 @@ export default class ElasticsearchHitCount extends Component {
       const json = await res.json()
 
       this.setState({ count: json.hits.total, error: false, loading: false })
-    } catch (error) {
+    } catch (error: any) {
       this.setState({ error: true, loading: false })
     } finally {
       this.timeout = setTimeout(() => this.fetchInformation(), this.props.interval)
