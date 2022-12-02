@@ -1,11 +1,22 @@
+
+1. First, we need to add the TypeScript type definitions for the imports. We can do this by adding the type definitions for React, isomorphic-unfetch, yup, and our own components.
+
 import { Component } from 'react'
 import fetch from 'isomorphic-unfetch'
 import { object, string, number } from 'yup'
-import Widget from '../../widget'
-import Counter from '../../counter'
+import Widget, { WidgetProps } from '../../widget'
+import Counter, { CounterProps } from '../../counter'
 import { basicAuthHeader } from '../../../lib/auth'
 
-const schema = object().shape({
+2. Next, we need to define the type of the schema object. We can do this by adding the type definitions for the shape of the object.
+
+const schema: yup.ObjectSchema<{
+  url: string;
+  index: string;
+  query: string;
+  interval: number;
+  title: string;
+}> = object().shape({
   url: string().url().required(),
   index: string().required(),
   query: string().required(),
@@ -13,48 +24,24 @@ const schema = object().shape({
   title: string()
 })
 
-export default class ElasticsearchHitCount extends Component {
-  static defaultProps = {
-    interval: 1000 * 60 * 5,
-    title: 'Elasticsearch Hit Count'
-  }
+3. Now, we need to define the type of the component. We can do this by adding the type definitions for the props and state.
 
-  state = {
-    count: 0,
-    error: false,
-    loading: true
-  }
+export default class ElasticsearchHitCount extends Component<{
+  url: string;
+  index: string;
+  query: string;
+  interval: number;
+  title: string;
+  authKey?: string;
+}, {
+  count: number;
+  error: boolean;
+  loading: boolean;
+}> {
 
-  componentDidMount () {
-    schema.validate(this.props)
-      .then(() => this.fetchInformation())
-      .catch((err) => {
-        console.error(`${err.name} @ ${this.constructor.name}`, err.errors)
-        this.setState({ error: true, loading: false })
-      })
-  }
+4. Finally, we need to add the type definitions for the render method. We can do this by adding the type definitions for the props and state.
 
-  componentWillUnmount () {
-    clearTimeout(this.timeout)
-  }
-
-  async fetchInformation () {
-    const { authKey, index, query, url } = this.props
-    const opts = authKey ? { headers: basicAuthHeader(authKey) } : {}
-
-    try {
-      const res = await fetch(`${url}/${index}/_search?q=${query}`, opts)
-      const json = await res.json()
-
-      this.setState({ count: json.hits.total, error: false, loading: false })
-    } catch (error) {
-      this.setState({ error: true, loading: false })
-    } finally {
-      this.timeout = setTimeout(() => this.fetchInformation(), this.props.interval)
-    }
-  }
-
-  render () {
+render () {
     const { count, error, loading } = this.state
     const { title } = this.props
     return (
